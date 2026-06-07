@@ -1,0 +1,39 @@
+Find the N'th element of a list.
+
+# at 2 ["a"; "b"; "c"; "d"; "e"];;
+- : string option = Some "c"
+# at 2 ["a"];;
+- : string option = None
+
+Remark: OCaml has List.nth which numbers elements from 0 and
+raises an exception if the index is out of bounds.
+
+# List.nth ["a"; "b"; "c"; "d"; "e"] 2;;
+- : string = "c"
+# List.nth ["a"] 2;;
+Exception: Failure "nth".
+
+
+
+let rec at k = function
+    | [] -> None (* 없으면 none *)
+    | h :: t -> if k = 0 then Some h else at (k - 1) t (* at (k - 1)을 []전체말고 t에서 하자! *)
+;; 하면
+
+
+val at : int -> 'a list -> 'a option = <fun> 된다.
+
+
+정리하자면
+⁠Some "값"⁠: 열어보니 안에 값이 들어있는 경우.
+⁠None⁠: 열어보니 비어있는 경우.
+
+if   (조건)
+then (조건이 참일 때 실행할 내용)
+else (조건이 거짓일 때 실행할 내용)
+
+따라서...
+
+if   k = 0 
+then if가 맞는말 이라면~ Some h 한다.
+else if에 해당하지 않는다면~ at (k-1) t 한다~
