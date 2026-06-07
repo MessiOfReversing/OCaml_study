@@ -1,0 +1,88 @@
+Find the last two (last and penultimate) elements of a list.
+
+# last_two ["a"; "b"; "c"; "d"];;
+- : (string * string) option = Some ("c", "d")
+# last_two ["a"];;
+- : (string * string) option = None
+
+
+
+함수형 언어에서 ⁠*⁠ 기호는 곱하기가 아니라 Tuple(튜플) 타입을 나타내는 기호.
+따라서 string * string⁠이 의미하는것은 문자열 2개가 쌍(Pair)을 이루고 있는 데이터 구조다.
+
+# let rec last_two = function
+    | [] | [_] -> None
+    | [x; y] -> Some (x,y)
+    | _ :: t -> last_two t;;
+val last_two : 'a list -> ('a * 'a) option = <fun>
+
+이렇게 해결 가능하다. 
+
+
+
+
+let rec last_two = function
+  | Case1 -> 결과1
+  | Case2 -> 결과2
+  | Case3 -> 결과3
+
+
+이건 tail of a list 문제에서 배운것인데, 여기서 | 가 무엇을 의미하는걸까?
+|⁠는 "또는 (OR)"을 의미한다. 따라서...
+
+
+ | [] | [_] -> None
+
+| [] -> None⁠ (리스트가 비어있다면 ⁠None⁠을 반환해라)
+| [_] -> None⁠ (리스트에 요소가 딱 1개 있다면 그게 무엇이든(_니까) ⁠None⁠을 반환해라)
+라는 의미이다.
+
+
+따라서 전체 의미는
+let rec last_two = function (* 재귀니까 rec *)
+  | [] | [_] -> None       (* 요소가 0개이거나 1개뿐인가? 그렇다면 탈락 (None) *)
+  | [x; y]   -> Some (x,y)  (* 요소가 딱 2개([x; y]) 남았나? 그렇다면 통과 (Some(x,y)) *)
+  | _ :: t   -> last_two t  (* 요소가 3개 이상인가? 그렇다면 맨 앞(_)은 무엇이든 일단 버리고 나머지(t)로 다시 검사 *)
+
+
+or가 | 라면 and는 뭘까?
+
+match list with
+| [x; y] as pair -> (* 요소가 2개인 리스트이면서, 동시에 그 리스트를 pair라는 이름으로 쓰겠다 *)
+
+as는 []처럼 리스트 전체에 and
+
+match (age, status) with
+| (20, "student") -> "20살 대학생이시군요!"
+(* 나이가 20세 '이면서' 상태가 student인 경우 *)
+
+, 로 요소 각각의 사이에 and 의미 이용
+
+match age with
+| x when x >= 20 && x < 30 -> "20대입니다!"
+(* x라는 값인데, '동시에' 20 이상 30 미만이어야 함 *)
+
+조건에서 &&도 사용함.
+
+or도 여러가지인데, | 말고 일반 조건에서는 || 로 쓰인다
+
+if score > 90 || attendance > 95 then
+  "우수 학생"
+else
+  "보통"
+
+한번에 차이를 보자면
+match user with
+| "admin" | "manager" -> "관리자 권한입니다."  (* 패턴 OR: admin이거나 manager 모양일 때 *)
+| name when name = "guest" || name = "anonymous" -> "손님 권한입니다." (* 논리 OR: name이 guest거나 anonymous일 때 *)
+
+
+눈치챘겠지만 let이 앞에 없으면 = 는 할당이 아니라 비교연산자다.
+OCaml에 ==도 쓰일때가 있긴한데 이건 값 비교가 아니라
+let list1 = [1; 2]
+let list2 = [1; 2]
+
+list1 = list2   (* true  -> 모양과 내용물이 같아서 *)
+list1 == list2  (* false -> 내용은 같지만, 컴퓨터 메모리 공간에서는 서로 다른 위치에 만들어져서 *)
+
+이렇게 주소가 같으냐는 질문으로 쓰인다
