@@ -1,0 +1,80 @@
+Find the number of elements of a list.
+
+OCaml standard library has List.length but we ask that you reimplement it. Bonus for a tail recursive solution.
+
+# length ["a"; "b"; "c"];;
+- : int = 3
+# length [];;
+- : int = 0
+
+해결
+
+
+let length list =
+    let rec aux n = function
+      | [] -> n
+      | _ :: t -> aux (n + 1) t
+    in
+    aux 0 list
+;;
+
+결과
+val length : 'a list -> int = <fun>
+
+
+
+설명
+
+n을 횟수마다 하나씩 늘려줌. aux는 보조함수라는 뜻인데 정식으로 선언된 함수명은 아니다. 그냥 붙인 이름.
+length 혼자서는 개수까지 세어내지 못하므로 보조함수를 보태주는것이다.
+
+aux 0 ["a"; "b"; "c"]⁠ 는 ⁠_ :: t⁠ (머리 ⁠"a"⁠, 꼬리 ⁠["b"; "c"]⁠)
+
+aux 1 ["b"; "c"]⁠ 는 ⁠_ :: t⁠ (머리 ⁠"b"⁠, 꼬리 ⁠["c"]⁠)
+
+aux 2 ["c"]⁠ 는 ⁠_ :: t⁠ (머리 ⁠"c"⁠, 꼬리 ⁠[]⁠)
+
+aux 3 []⁠ 는 []⁠ (빈 리스트)
+
+let rec aux n = function
+  | [] -> n                 (* 경우 1: 리스트가 비어있으면, 현재 n을 그대로 내뱉고 끝내 *)
+  | _ :: t -> aux (n + 1) t  (* 경우 2: 리스트에 알맹이가 있으면, 1을 더해서 다시 세어라 *)
+
+
+in aux 0 list는 보조함수가 일을 끝내고 보고하게 하는것임. 보조함수 없으면 안써도됨
+
+int add(int a, int b) {
+    int result = a + b;
+    return result; // c언어는 "이 값을 반환해라!"라고 명령해야 함
+}
+
+그런데 ocaml은
+
+let add a b = 
+  a + b        (* 이 줄이 마지막 계산이므로, 자동으로 이 결과가 반환됨 *)
+
+
+따라서 
+let length list =
+  let rec aux n = function
+    | [] -> n                (* 1. 빈 리스트면 n이라는 '값' 자체가 결과가 됨 *)
+    | _ :: t -> aux (n + 1) t
+  in
+  aux 0 list                 (* 2. 이 함수의 맨 마지막 줄은 aux 0 list의 '결과값'임 *)
+
+이렇게 보조함수만 끝을 맺어주면 그걸로 끝임.
+ 
+
+제출은 이렇게함
+(* 
+# length ["a"; "b"; "c"];;
+- : int = 3
+# length [];;
+- : int = 0
+*)
+let length list = 
+  let rec aux n = function
+    |[] -> n
+    |_::t -> aux(n + 1) t
+in aux 0 list
+;;
