@@ -1,0 +1,82 @@
+첫 문제는 이렇다.
+
+
+
+Write a function last : 'a list -> 'a option that returns the last element of a list
+
+# last ["a" ; "b" ; "c" ; "d"];;
+- : string option = Some "d"
+# last [];;
+- : 'a option = None
+
+
+
+# last ["a" ; "b" ; "c" ; "d"];;는 last함수에 ["a" ; "b" ; "c" ; "d"]라는 리스트를
+넣었다는 의미.
+
+- : string option 는 타입 (일반적인 문자열이 아닌 또다른 캐릭터나 문자열이 들어있을 수도 있는 타입)
+= Some "d" 는 해당하는 결과 값 (string option으로 타입을 설정했고, 그 안에 든건 "d"라는 값이라는것.)
+
+# last [];; 는 비어있는 리스트를 주며 "여기에 last, 즉 마지막 원소 꺼내오라는 의미임. 아까 last라는건 string option에 따라 "d", 즉 마지막 원소라고
+정했으니깐.
+
+- : 'a option 컴퓨터가 비어있는 string option을 마주치면 "비어있기 때문에 뭘 할수가 없어서 일단 무슨 타입이든 담을 비어있는 타입으로 돌려준다"
+라는 의미로 'a option 이라는 타입으로 대답한다.'가 붙은 'a는 아무 타입이든 된다는 제너릭 타입이다. 알파라고 읽는다.
+
+따라서 ⁠["a"; "b"]⁠ 같은 글자 리스트를 넣으면 ⁠string option⁠을 돌려주고,
+ ⁠[1; 2; 3]⁠ 같은 숫자 리스트를 넣으면 ⁠int option⁠을 돌려준다는 의미임.
+
+= None 이게 결과물. 비었으니 당연히 대답이 none이다.
+
+
+
+해결은 어떻게 할까?
+
+저런 결과가 나오게 하려면
+
+# let rec last = function
+  | [] -> None (* 비었으면 None을 반환하라고 했으니 *)
+  | [ x ] -> Some x (* 원소가 x 하나뿐이면 Some x 반환 *)
+  | _ :: t -> last t;;
+
+라고 입력하면 된다. last는 재귀함수라서 let이랑 last사이에 rec이라고 적어둬야한다.
+그러면 로컬에서 
+
+val last : 'a list -> 'a option = <fun>
+
+이런 대답이 나올것이다.
+
+
+
+여기서 _ :: t -> last t;; 란 _ :: t 가 성립을 한다면 last t;;를 실행하라는 의미다. 즉 if와 switch문 느낌이다.
+
+head :: tail에선 
+["a"; "b"; "c"; "d"] 이런경우
+head는 "a"
+tail = ["b"; "c"; "d"] 즉 나머지.
+
+따라서 _가 "해당 자리에 무엇이 오든 상관 않는다" 라는 의미란걸 감안하면, _ :: t -> last t;;의 의미는
+첫번째 원소가 뭐든 관계없이 그건 버리고, 나머지 원소들만 t라 부르겠다. 만약 이것이 성립하고 이뤄졌다면 그 t를 갖고 다시 last해라. 라는 의미다.
+
+
+
+let rec last l = 
+  match l with
+  | [] -> None
+  | [x] -> Some x
+  | _ :: t -> last t
+라고 적어도 되는데 # let rec last = function를 쓴 이유는
+
+function⁠은 [입력 변수 받기 + ⁠match 입력변수 with⁠] 이 두 가지 행동을 합쳐서 한 단어로 줄여놓은 작동을 하기 때문이다.
+function이나 <fun>이나 둘다 똑같이 C로 따지면 if나 else, printf같은 공식적으로 선언된 명령어다.
+
+val last : 'a list -> 'a option = <fun> 는 따라서
+"⁠last⁠라는 이름의 함수를 명령대로 잘 만들었고, 스펙은 ⁠list -> option⁠이며, 그 내부에 조립된 기계어 코드는 ⁠<fun>⁠이라고 표시하겠다" 라는 의미다.
+
+
+
+C언어에서 char* state = "good" 이라고 입력하면 state를 갖고 여러 함수에 good이라는 문자열을 집어넣는데에는 문제가 없지만 
+이 state가 갖고있는 값 자체는 good이 저장된 메모리 주소 (0x어쩌고) 일테니 이거랑 비슷하게 last도
+  | [] -> None
+  | [x] -> Some x
+  | _ :: t -> last t 이거를 다 적어 보이는게 아니라 <fun>이라고만 출력하는거라고 이해했다.
