@@ -1,0 +1,85 @@
+If you need to, refresh your memory about run-length encoding.
+
+Here is an example:
+
+# encode ["a"; "a"; "a"; "a"; "b"; "c"; "c"; "a"; "a"; "d"; "e"; "e"; "e"; "e"];;
+- : (int * string) list =
+[(4, "a"); (1, "b"); (2, "c"); (2, "a"); (1, "d"); (4, "e")]
+
+뭐가 몇번씩 나오는지 순서대로 적어야한다는 요구사항임.
+
+
+해결하려면
+
+
+let encode lst =
+  (* aux는 재귀를 돌며 결과를 쌓아갈 내부 함수 *)
+  (* count: 현재 연속된 요소의 개수, current: 현재 세고 있는 요소 *)
+  let rec aux count current acc = function
+    | [] -> 
+        (* 리스트가 끝나면 마지막으로 세고 있던 그룹을 추가하고 결과를 뒤집어서 반환 *)
+        (count, current) :: acc |> List.rev
+    | x :: xs -> 
+        if x = current then
+          (* 같은 문자가 이어지면 카운트를 1 증가시킵니다. *)
+          aux (count + 1) current acc xs
+        else
+          (* 새로운 문자가 등장하면, 기존에 세던 그룹을 acc에 넣고 새 문자를 세기 시작 *)
+          aux 1 x ((count, current) :: acc) xs
+  in
+  match lst with
+  | [] -> [] (* 빈 리스트가 들어오면 빈 리스트 반환 *)
+  | x :: xs -> aux 1 x [] xs
+
+
+
+
+이런 의문들이 생겼습니다.
+
+let rec aux count current acc = function 에서 분명히 acc로 커맨드 자리 마련이 끝났는데
+if x = current then
+          (* 같은 문자가 이어지면 카운트를 1 증가시킵니다. *)
+          aux (count + 1) current acc xs
+여기 이 xs는 무슨 자리에 들어가있는거지? 이래도 작동을 하나? 싶었습니다.
+
+
+(* 1. function을 사용한 원래 코드 *)
+let rec aux count current acc = function
+  | [] -> ...
+  | x :: xs -> ...
+
+(* 2. function을 풀어서 쓴 똑같은 코드 *)
+let rec aux count current acc lst = 
+  match lst with
+  | [] -> ...
+  | x :: xs -> ...
+
+원래 aux 함수는 4개의 인자를 받는다.
+function을 사용해서 lst를 생략했다. 즉 치환한거다.
+경우를 나눠서 서로 다른 작동을 하는 lst가 필요했으니 온당하다.
+
+let rec aux count current acc = function  (* ← 'lst' 자리를 function으로 대체 *)
+  | [] -> ...                            (* ← 경우 1: lst가 빈 리스트일 때의 설명 *)
+  | x :: xs -> ...                       (* ← 경우 2: lst에 원소가 들어있을 때의 설명 *)
+
+이렇게.
+
+원래는 acc에 넣을 원소라는 의미의 lst가 필요했는데 경우에따라 다르니 그 자리에 function을 두고 밑에 설명을 적은거라고 보면 된다.
+
+
+그리고
+
+
+Else
+          (* 새로운 문자가 등장하면, 기존에 세던 그룹을 acc에 넣고 새 문자를 세기 시작 *)
+          aux 1 x ((count, current) :: acc) xs 
+
+여기서는 만약 새로운 문자가 나오면 count를 1로 초기화하고, current를 새로운 문자일 x로 교체하고, 
+lst자리에 xs를 넣어서 계속해서 진행되게 한다는건 이해했는데 ((count, current) :: acc)이건 이유가 뭔가 하는 의문이 들었습니다.
+acc에 (count, current)를 집어넣는다는 의미같은데 count를 1로 초기화하면서 이미 count가 1이 되었고, current가 x가 되었으니
+(count, current)를 그 후에 해버리면 이전 그룹이 encode에 못들어가는거 아닌가? 하는 의문이었습니다.
+
+--> "다음 함수의 인자로 보낼 줄안에서는 그런 순서 고려안해도 된다" 가 결론입니다.
+
+
+여담이지만 OCaml은 새로운 인자들을 "오른쪽부터" 읽습니다.
