@@ -1,0 +1,74 @@
+Find out whether a list is a palindrome.
+
+Hint: A palindrome is its own reverse.
+
+# is_palindrome ["x"; "a"; "m"; "a"; "x"];;
+- : bool = true
+# not (is_palindrome ["a"; "b"]);;
+- : bool = true
+
+
+
+의미는 palindrome이 맞으려면 xamax처럼 대칭이 되어야한다는 것이다.
+그렇지 못한경우는 not palindrome이다.
+
+
+
+작성
+
+
+
+let rec reverse list acc =
+  match list with
+  | [] -> acc
+  | x :: xs -> reverse xs (x :: acc)
+
+let is_palindrome list =
+  list = reverse list []
+
+
+결과는 
+
+
+val reverse : 'a list -> 'a list -> 'a list = <fun>
+val is_palindrome : 'a list -> bool = <fun>
+
+로 나온다.
+
+match는 패턴매칭 문법이다.
+데이터의 패턴을 파악해서 그에 맞는 코드를 실행해준다.
+
+match 변수 with
+| 패턴1 -> 패턴1이 맞을 때 실행할 코드
+| 패턴2 -> 패턴2가 맞을 때 실행할 코드
+| _     -> 어떤 패턴도 맞지 않을 때 실행할 코드 (기본값)
+
+
+
+| x :: xs -> reverse xs (x :: acc) 의 의미는?
+
+
+
+⁠| x :: xs -> ...⁠: 만약 리스트에 원소가 들어있다면, 맨 앞의 원소를 ⁠x⁠라 부르고, 남은 뒷부분 리스트를 ⁠xs⁠라고 부르면서 다음 코드를 실행해라.
+따라서 ⁠["x"; "a"; "m"]⁠이 들어오면 ⁠x⁠는 ⁠"x"⁠가 되고, ⁠xs⁠는 ⁠["a"; "m"]⁠이 된다.
+
+실행하는 코드는 reverse xs (x :: acc) 인데 각 순서는 reverse list acc 를 따르므로 list에 xs추가를 하고, acc에 (x :: acc)를 입력한다.
+acc에 (x :: acc)를 입력한다는 말의 의미는 acc에 x를 집어넣는다는 의미다.
+
+따라서 
+Acc는 빈 리스트고, reverse xs (x :: acc) 가 진행될수록 머리만 떼어다가 acc에 집어넣으니 
+새롭게 입력되는 원소는 맨앞자리로 입력되는 리스트 특성상 뒤집힌 리스트가 acc에 완성된다는 논리.
+
+
+
+OCaml.org의 오피셜 솔루션은
+let is_palindrome list =
+    (* One can use either the rev function from the previous problem, or the built-in List.rev *)
+    list = List.rev list
+;;
+
+결과는
+val is_palindrome : 'a list -> bool = <fun>
+
+내장 라이브러리 함수인 List.rev 가 이름에서부터 보여지듯 리스트를 뒤집기 위해 존재하는 함수라서 이걸 이용한것이다.
+작동 원리는 앞의 코드와 같다.
