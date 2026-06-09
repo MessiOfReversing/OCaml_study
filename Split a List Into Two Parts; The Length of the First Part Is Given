@@ -54,3 +54,23 @@ let split list n =
   in
   acc_split [] list n
 ;;
+
+
+
+공식 솔루션은 아래와 같다.
+
+
+
+let split list n =
+    let rec aux i acc = function
+      | [] -> List.rev acc, []
+      | h :: t as l -> if i = 0 then List.rev acc, l
+                       else aux (i - 1) (h :: acc) t
+    in
+      aux n [] list
+;;
+
+
+아래는 결과
+
+val split : 'a list -> int -> 'a list * 'a list = <fun>
