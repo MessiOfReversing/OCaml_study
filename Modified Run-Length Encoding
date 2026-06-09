@@ -71,3 +71,54 @@ type 'a rle =
   | Many of int * 'a
 여기서 선언한 타입인 One을 이용해서 One x가 쓰인것이고, Many (개수, x)가 쓰인것이다.
 
+
+오피셜 솔루션
+
+type 'a rle =
+  | One of 'a
+  | Many of int * 'a
+;;
+
+let encode l =
+    let create_tuple cnt elem =
+      if cnt = 1 then One elem
+      else Many (cnt, elem) 
+in
+    let rec aux count acc = function
+      | [] -> []
+      | [x] -> (create_tuple (count + 1) x) :: acc
+      | hd :: (snd :: _ as tl) ->
+          if hd = snd then aux (count + 1) acc tl
+          else aux 0 ((create_tuple (count + 1) hd) :: acc) tl 
+in
+      List.rev (aux 0 [] l)
+;;
+
+결과는
+type 'a rle = One of 'a | Many of int * 'a
+val encode : 'a list -> 'a rle list = <fun>
+
+
+
+*는 튜플 타입 구분자다.
+type 'a rle =
+  | One of 'a
+  | Many of int * 'a
+;;
+
+를 보면 Many of int * 'a 라고 이렇게 튜플로 선언하는데, Many라는 이름의 박스 하나 내어와서는 'a즉 알파로 
+묶어서 데이터를 넣겠다는 의미다. 분명하게 말하자면 Many of int * 'a는 Many ( 정수, 알파) 와 완전히 같다.
+밑에 보면 
+
+let create_tuple cnt elem =
+      if cnt = 1 then One elem
+      else Many (cnt, elem) in
+
+
+라고 해뒀으니 Many에 들어가는 튜플 원소 각각은 count랑 원소 하나씩이란걸 다시 한 번 알 수 있다.
+
+최종 탈파이프인 []⁠ 또는 ⁠[x]에⁠ 매칭되면 끝난다.
+리스트의 마지막 원소까지 다 처리하여 ⁠[]⁠나 ⁠[x]⁠ 패턴에 걸리면, 드디어 더 이상 재귀 호출을 하지 않고 
+최종 결과가 담길 ⁠acc⁠를 들고 ⁠aux⁠ 함수 루프를 빠져나온다.
+
+그후 in 타고 내려와서 List.rev로 끝난다.
