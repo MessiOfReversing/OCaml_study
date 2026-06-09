@@ -1,0 +1,41 @@
+# duplicate ["a"; "b"; "c"; "c"; "d"];;
+- : string list = ["a"; "a"; "b"; "b"; "c"; "c"; "c"; "c"; "d"; "d"]
+
+이건 리스트의 원소를 두배로 추가시키라는 문제다.
+
+완성된 코드는 아니지만 논리만 먼저 적어보자면 아래와 같다.
+
+let rec duplicate list =
+  match list with
+  | [] -> []                     (* 빈 리스트면 그대로 빈 리스트 반환 *)
+  | x :: xs -> x :: x :: duplicate xs  (* 머리(x)를 두 번 넣고, 나머지(xs) 재귀 호출 *)
+
+리스트에 원소하나 더 추가하는건 x :: x :: [넣을곳] 으로 작성하면 된다.
+
+let duplicate list =
+  let rec loop acc = function
+    | [] -> List.rev acc  (* 뒤집혀서 쌓였으므로 마지막에 한 번 뒤집어줌 *)
+    | x :: xs -> loop (x :: x :: acc) xs
+  in
+  loop [] list
+
+내장된 함수로는
+
+let duplicate list =
+  List.concat_map (fun x -> [x; x]) list
+
+이렇게 작성해도 된다.
+
+# let rec duplicate = function
+    | [] -> []
+    | h :: t -> h :: h :: duplicate t;;
+val duplicate : 'a list -> 'a list = <fun>
+
+이게 오피셜인데
+
+let rec duplicate = function
+    | [] -> []
+    | h :: t -> h :: h :: duplicate t
+;;
+라고 작성하는 첫번째 방식과 같다.
+val duplicate : 'a list -> 'a list = <fun>
