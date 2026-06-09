@@ -1,0 +1,56 @@
+Split a list into two parts; the length of the first part is given.
+
+If the length of the first part is longer than the entire list, 
+then the first part is the list and the second part is empty.
+
+# split ["a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i"; "j"] 3;;
+- : string list * string list =
+(["a"; "b"; "c"], ["d"; "e"; "f"; "g"; "h"; "i"; "j"])
+# split ["a"; "b"; "c"; "d"] 5;;
+- : string list * string list = (["a"; "b"; "c"; "d"], [])
+
+
+
+뒤에 입력하는 숫자만큼 분리하는 코드를 작성해야함.
+
+
+
+let rec split lst n =
+  if n <= 0 then ([], lst)
+  else
+    match lst with
+    | [] -> ([], [])
+    | hd :: tl ->
+        let (first, second) = split tl (n - 1) 
+in
+        (hd :: first, second)
+;;
+
+
+
+1. ⁠let ... in ...⁠ 문법 규칙:
+OCaml에서 함수 내부나 표현식 안에서 로컬 변수를 선언할 때는 반드시 ⁠let 변수 = 값 in 표현식⁠ 형태를 갖추어야 한다. ⁠
+in⁠ 뒤에 오는 표현식이 이 변수들을 사용할 샌드박스를 발표하는 역할이다.
+
+2. 리스트 조립:
+⁠split tl (n - 1)으로 tail을 lst에 집어넣고, n을 하나 줄이며 리스트를 let (first, second)로 두 부분으로 나누어 오면,
+원래 리스트의 ⁠hd⁠를 앞쪽 리스트(⁠first⁠)의 맨 앞에 다시 넣어주어야(⁠hd :: first 로⁠) 원하는 개수만큼만 썰린 리스트가 완성됨.
+
+
+
+
+그리고
+아래처럼도 가능하다
+
+
+
+let split list n =
+  let rec acc_split acc list n = (* acc는 eax같은거다. 각 계산마다의 결과를 잠깐 갖고있을 변수 *)
+    if n <= 0 then (List.rev acc, list)
+    else
+      match list with
+      | [] -> (List.rev acc, [])
+      | x :: xs -> acc_split (x :: acc) xs (n - 1)
+  in
+  acc_split [] list n
+;;
