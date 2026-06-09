@@ -1,0 +1,73 @@
+Modify the result of the previous problem in such a way that if an element has no duplicates it is simply copied into the result list. Only elements with duplicates are transferred as (N E) lists.
+
+Since OCaml lists are homogeneous, one needs to define a type to hold both single elements and sub-lists.
+
+type 'a rle =
+  | One of 'a
+  | Many of int * 'a
+# encode ["a"; "a"; "a"; "a"; "b"; "c"; "c"; "a"; "a"; "d"; "e"; "e"; "e"; "e"];;
+- : string rle list =
+[Many (4, "a"); One "b"; Many (2, "c"); Many (2, "a"); One "d";
+ Many (4, "e")]
+
+중복이 없으면 one으로, 있으면 many로 개수까지 적어서 반환.
+
+type 'a rle =
+  | One of 'a
+  | Many of int * 'a
+
+let encode list =
+  (* 연속된 동일 요소의 개수를 세는 헬퍼 함수 (꼬리 재귀) *)
+  let rec aux count acc = function
+    | [] -> acc
+    | [x] -> if count = 0 then One x :: acc else Many (count + 1, x) :: acc
+    | a :: (b :: _ as t) ->
+        if a = b then 
+          aux (count + 1) acc t
+        else if count = 0 then 
+          aux 0 (One a :: acc) t
+        else 
+          aux 0 (Many (count + 1, a) :: acc) t
+  in
+  (* 결과가 역순으로 쌓이므로 List.rev로 뒤집어줍니다. *)
+  List.rev (aux 0 [] list)
+
+결과는
+type 'a rle = One of 'a | Many of int * 'a
+val encode : 'a list -> 'a rle list = <fun>
+
+____설명____
+
+
+패턴 매칭과 누적 관리 변수(⁠count⁠, ⁠acc⁠)를 활용한 원리다.
+1. ⁠aux count acc list⁠:
+
+ ⁠count⁠: 현재까지 연속으로 등장한 동일한 요소의 개수(기본값 ⁠0⁠에서 시작하여 중복될 때마다 +1)다.
+
+ ⁠acc⁠: 지금까지 만들어진 ⁠rle list⁠ 결과다.
+
+2. 패턴 매칭 구조:
+
+ ⁠[]⁠: 빈 리스트가 들어오면 누적된 결과를 그대로 반환한다.
+
+ ⁠[x]⁠: 리스트의 마지막 요소에 도달했을 때. ⁠count⁠가 0이면 중복이 없었다는 뜻이므로 ⁠One x⁠,
+0보다 크면 중복이 있었다는 뜻이므로 ⁠Many (count + 1, x)⁠를 붙인다.
+
+ ⁠a :: (b :: _ as t)⁠: 현재 요소 ⁠a⁠와 다음 요소 ⁠b⁠를 비교함.
+
+ ⁠a = b⁠이면: 중복을 찾았으므로 ⁠count⁠를 1 증가시키고 다음으로 넘어감.
+
+ ⁠a <> b⁠이면: 연속이 끊긴경우. ⁠count⁠가 0이면 ⁠One a⁠를, 0보다 크면 ⁠Many (count + 1, a)⁠를 결과에 추가하고 ⁠
+count⁠를 다시 0으로 초기화함. OCaml에선 != 대신에 <>라고 표기함.
+
+
+
+| [x] -> if count = 0 then One x :: acc else Many (count + 1, x) :: acc
+이건 무슨의미일까?
+
+
+type 'a rle =
+  | One of 'a
+  | Many of int * 'a
+여기서 선언한 타입인 One을 이용해서 One x가 쓰인것이고, Many (개수, x)가 쓰인것이다.
+
